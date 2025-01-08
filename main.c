@@ -1,6 +1,9 @@
 #include "jeu.h"
 
 int main() {
-    printGame(NULL);
+    Jeu jeu;
+    jeu.tour = 1;
+
+    printGame(&jeu);
 }
 
