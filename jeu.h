@@ -3,8 +3,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "tourelle.h"
 #include "etudiant.h"
+
+#define MAX_LINE_LENGTH 100
+#define NUM_COLS 15
 
 typedef struct {
 Tourelle* tourelles;
@@ -13,7 +17,9 @@ int cagnotte;
 int tour;
 } Jeu;
 
-void printGame (const Jeu *j);
+void printTour (const Jeu *j);
 char* readFile(const char* filePath);
+int parseFileContent(const char* fileContents, Jeu *jeu);
+
 
 #endif

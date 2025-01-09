@@ -4,16 +4,14 @@ int main() {
 
     const char* filePath = "vague.txt";
 
-    Jeu jeu;
-    jeu.tour = 1;
+    Jeu* jeu;
+    jeu->tour = 1;
 
-    printGame(&jeu);
     char* contents = readFile(filePath);
-
     if (contents != NULL) {
-        printf("File Contents:\n%s\n", contents);
+        parseFileContent(contents, jeu);
+        printTour(jeu);
         free(contents); // Free the allocated memory
     }
 
 }
-

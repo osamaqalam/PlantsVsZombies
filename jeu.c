@@ -1,15 +1,26 @@
 #include "jeu.h"
 
-void printGame (const Jeu *j)
+void printTour (const Jeu *jeu)
 {
-    printf("Tour %d\n", j->tour);
+    Etudiant* curEtudiant = jeu->etudiants;
 
-    for (int i = 0; i < 7; i++) {
-        printf("%d", i+1);
+    printf("Tour %d\n", jeu->tour);
+
+    for (int ligne = 1; ligne <= 7; ligne++) {
+        printf("%d", ligne);
         printf("|   ");
-        for (int j = 0; j < 15; j++) {
-            printf(".   ");
+        for (int pos = 1; pos <= 15; pos++) {
+            //printf("pos1+1:%d==curEtudiant->position=%d\n", pos+1,  curEtudiant->position);
+            if (jeu->tour == curEtudiant->tour && ligne == curEtudiant->ligne
+                && pos == curEtudiant->position)
+            {
+                printf("%dZ  ", curEtudiant->pointsDeVie);
+                curEtudiant = curEtudiant->next;
+            }
+            else
+                printf(".   ");
         }
+
         printf("\n");
     }
 }
@@ -69,4 +80,59 @@ char* readFile(const char* filePath) {
     return buffer;
 }
 
+int parseFileContent(const char* fileContents, Jeu *jeu)
+{
+    // Parse the file contents
+    int lineCount = 0; // Tracks the number of parsed lines
+    char buffer[MAX_LINE_LENGTH];
+    const char* current = fileContents;
+    Etudiant* lastEtudiant = NULL;
+
+    // Loop while there is a line to read
+    // sscanf will store whatever is right after % in the later arguments
+    while (sscanf(current, "%[^\n]\n", buffer) == 1) {
+        //read the cagnotte on first iteration
+        if (lineCount==0)
+        {
+            sscanf(buffer, "%d", &jeu->cagnotte);
+        }
+        else
+        {
+            char type;
+
+            // Dynamically allocate memory for an instance of Etudiant
+            Etudiant* etudiant = (Etudiant*)malloc(sizeof(Etudiant));
+            if (etudiant == NULL) {
+                perror("Error allocating memory for Etudiant");
+                return -1; // Return an error code
+            }
+
+            sscanf(buffer, "%d %d %c", &etudiant->tour, &etudiant->ligne, &type);
+            etudiant->position = NUM_COLS; // Start 
+
+            if (type == 'Z') 
+            {
+                etudiant->type = 0;
+                etudiant->pointsDeVie = 3;
+            }
+
+            // if not first etudiant
+            if (lastEtudiant) 
+                lastEtudiant->next = etudiant;
+            else
+            { 
+                //printf("etudiants was initialized with %d %d %d", etudiant->tour, etudiant->ligne, etudiant->type);
+                jeu->etudiants = etudiant;
+            }
+
+            lastEtudiant = etudiant;
+        }
+        // Move to the next line
+        current += strlen(buffer) + 1;
+        lineCount++;
+
+    }
+
+    return lineCount;
+}
 

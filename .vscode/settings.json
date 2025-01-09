@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "jeu.h": "c"
+        "jeu.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c"
     }
 }
