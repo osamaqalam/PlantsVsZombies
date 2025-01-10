@@ -1,6 +1,8 @@
 #ifndef JEU_H
 #define JEU_H
 
+#include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +22,7 @@ int tour;
 void printTour (const Jeu *j);
 char* readFile(const char* filePath);
 int parseFileContent(const char* fileContents, Jeu *jeu);
-
+void moveEtudiants(Jeu *jeu);
+bool checkGameOver(Jeu *jeu);
 
 #endif

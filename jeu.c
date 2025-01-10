@@ -2,27 +2,31 @@
 
 void printTour (const Jeu *jeu)
 {
-    Etudiant* curEtudiant = jeu->etudiants;
-
     printf("Tour %d\n", jeu->tour);
 
     for (int ligne = 1; ligne <= 7; ligne++) {
         printf("%d", ligne);
         printf("|   ");
         for (int pos = 1; pos <= 15; pos++) {
-            //printf("pos1+1:%d==curEtudiant->position=%d\n", pos+1,  curEtudiant->position);
-            if (jeu->tour == curEtudiant->tour && ligne == curEtudiant->ligne
-                && pos == curEtudiant->position)
-            {
-                printf("%dZ  ", curEtudiant->pointsDeVie);
-                curEtudiant = curEtudiant->next;
+            Etudiant* curEtudiant = jeu->etudiants;
+            bool cellOccupied = false;
+
+            while (curEtudiant != NULL)
+            {        
+                if ( ligne == curEtudiant->ligne && pos == curEtudiant->position)
+                {
+                    printf("%dZ  ", curEtudiant->pointsDeVie);
+                    cellOccupied = true;
+                    break;
+                }  
+                curEtudiant = curEtudiant->next;   
             }
-            else
+            if (!cellOccupied) 
                 printf(".   ");
         }
-
         printf("\n");
     }
+    printf("\n");
 }
 
 char* readFile(const char* filePath) {
@@ -86,11 +90,12 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
     int lineCount = 0; // Tracks the number of parsed lines
     char buffer[MAX_LINE_LENGTH];
     const char* current = fileContents;
+    Etudiant* etudiant = NULL;
     Etudiant* lastEtudiant = NULL;
 
     // Loop while there is a line to read
     // sscanf will store whatever is right after % in the later arguments
-    while (sscanf(current, "%[^\n]\n", buffer) == 1) {
+    while (sscanf(current, "%[^\n]\n", buffer) == 1 && isdigit(buffer[0])) {
         //read the cagnotte on first iteration
         if (lineCount==0)
         {
@@ -101,14 +106,14 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
             char type;
 
             // Dynamically allocate memory for an instance of Etudiant
-            Etudiant* etudiant = (Etudiant*)malloc(sizeof(Etudiant));
+            etudiant = (Etudiant*)malloc(sizeof(Etudiant));
             if (etudiant == NULL) {
                 perror("Error allocating memory for Etudiant");
                 return -1; // Return an error code
             }
 
             sscanf(buffer, "%d %d %c", &etudiant->tour, &etudiant->ligne, &type);
-            etudiant->position = NUM_COLS; // Start 
+            etudiant->position = NUM_COLS+etudiant->tour-1; // Start 
 
             if (type == 'Z') 
             {
@@ -132,7 +137,35 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
         lineCount++;
 
     }
-
+    lastEtudiant->next = NULL;
     return lineCount;
 }
 
+void moveEtudiants(Jeu *jeu)
+{
+    Etudiant* curEtudiant = jeu->etudiants;
+
+    while (curEtudiant != NULL)
+    {        
+        curEtudiant->position--;
+        curEtudiant = curEtudiant->next;   
+    }
+}
+
+bool checkGameOver(Jeu *jeu)
+{
+    Etudiant* curEtudiant = jeu->etudiants;
+
+    while (curEtudiant != NULL)
+    {
+        if (curEtudiant->position <= 0)
+        {
+            printf("GAME OVER!!!\n");
+            return true;
+        }
+
+        curEtudiant = curEtudiant->next;
+    }
+
+    return false;
+}
