@@ -1,5 +1,12 @@
 #include "jeu.h"
 
+void initJeu(Jeu *jeu, int cagnotte) {
+    jeu->tour = 1;
+    jeu->cagnotte = cagnotte;
+    jeu->etudiants = NULL;
+    jeu->tourelles = NULL;
+}
+
 void printTour (const Jeu *jeu)
 {
     printf("Tour %d\n", jeu->tour);
@@ -168,4 +175,26 @@ bool checkGameOver(Jeu *jeu)
     }
 
     return false;
+}
+
+bool placeTourelle(Jeu* jeu, int type, int x, int y) {
+    Tourelle* tourelle = (Tourelle*)malloc(sizeof(Tourelle));
+    tourelle->type = type;
+    tourelle->pointsDeVie = 3;
+    tourelle->ligne = y;
+    tourelle->position = x;
+    tourelle->prix = TOURELLE_PRICES[type];
+    tourelle->next = NULL;
+
+    Tourelle* curTourelle = jeu->tourelles;
+    if (curTourelle == NULL) {
+        jeu->tourelles = tourelle;
+    } else {
+        while (curTourelle->next != NULL) {
+            curTourelle = curTourelle->next;
+        }
+        curTourelle->next = tourelle;
+    }
+
+    return true;
 }

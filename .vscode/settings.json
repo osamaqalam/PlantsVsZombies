@@ -4,6 +4,7 @@
         "stdio.h": "c",
         "stdlib.h": "c",
         "string.h": "c",
-        "tourelle.h": "c"
+        "tourelle.h": "c",
+        "stdbool.h": "c"
     }
 }

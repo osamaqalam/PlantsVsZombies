@@ -19,10 +19,13 @@ int cagnotte;
 int tour;
 } Jeu;
 
+void initJeu (Jeu *j, int cagnotte);
 void printTour (const Jeu *j);
 char* readFile(const char* filePath);
 int parseFileContent(const char* fileContents, Jeu *jeu);
 void moveEtudiants(Jeu *jeu);
 bool checkGameOver(Jeu *jeu);
+bool placeTourelle(Jeu* jeu, int type, int x, int y);
+
 
 #endif
