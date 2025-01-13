@@ -26,6 +26,8 @@ int parseFileContent(const char* fileContents, Jeu *jeu);
 void moveEtudiants(Jeu *jeu);
 bool checkGameOver(Jeu *jeu);
 bool placeTourelle(Jeu* jeu, int type, int x, int y);
+void towersAttack(Jeu* jeu);
+void basicTowerAttack(Jeu* jeu, Tourelle* tourelle);
 
 
 #endif

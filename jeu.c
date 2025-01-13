@@ -1,6 +1,7 @@
 #include "jeu.h"
 
-void initJeu(Jeu *jeu, int cagnotte) {
+void initJeu(Jeu *jeu, int cagnotte) 
+{
     jeu->tour = 1;
     jeu->cagnotte = cagnotte;
     jeu->etudiants = NULL;
@@ -16,8 +17,10 @@ void printTour (const Jeu *jeu)
         printf("|   ");
         for (int pos = 1; pos <= 15; pos++) {
             Etudiant* curEtudiant = jeu->etudiants;
+            Tourelle* curTourelle = jeu->tourelles;
             bool cellOccupied = false;
 
+            // Check if a cell is occupied by an etudiant
             while (curEtudiant != NULL)
             {        
                 if ( ligne == curEtudiant->ligne && pos == curEtudiant->position)
@@ -28,6 +31,19 @@ void printTour (const Jeu *jeu)
                 }  
                 curEtudiant = curEtudiant->next;   
             }
+
+            // Check if a cell is occupied by a tourelle
+            while (curTourelle != NULL)
+            {        
+                if ( ligne == curTourelle->ligne && pos == curTourelle->position)
+                {
+                    printf("%dT  ", curTourelle->pointsDeVie);
+                    cellOccupied = true;
+                    break;
+                }  
+                curTourelle = curTourelle->next;   
+            }
+
             if (!cellOccupied) 
                 printf(".   ");
         }
@@ -36,7 +52,8 @@ void printTour (const Jeu *jeu)
     printf("\n");
 }
 
-char* readFile(const char* filePath) {
+char* readFile(const char* filePath) 
+{
     // Open the file in binary mode
     FILE* file = fopen(filePath, "rb");
     if (file == NULL) {
@@ -125,7 +142,7 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
             if (type == 'Z') 
             {
                 etudiant->type = 0;
-                etudiant->pointsDeVie = 3;
+                etudiant->pointsDeVie = 5;
             }
 
             // if not first etudiant
@@ -167,20 +184,29 @@ bool checkGameOver(Jeu *jeu)
     {
         if (curEtudiant->position <= 0)
         {
-            printf("GAME OVER!!!\n");
+            printf("GAME OVER - YOU LOSE!\n");
             return true;
         }
 
         curEtudiant = curEtudiant->next;
     }
 
+    if (jeu->etudiants == NULL)
+    {
+        printf("GAME OVER - YOU WIN!\n");
+        return true;
+    }
+
     return false;
 }
 
-bool placeTourelle(Jeu* jeu, int type, int x, int y) {
+bool placeTourelle(Jeu* jeu, int type, int x, int y) 
+{
+
     Tourelle* tourelle = (Tourelle*)malloc(sizeof(Tourelle));
     tourelle->type = type;
-    tourelle->pointsDeVie = 3;
+    if (type == 0)
+        tourelle->pointsDeVie = 3;
     tourelle->ligne = y;
     tourelle->position = x;
     tourelle->prix = TOURELLE_PRICES[type];
@@ -197,4 +223,50 @@ bool placeTourelle(Jeu* jeu, int type, int x, int y) {
     }
 
     return true;
+}
+
+void towersAttack(Jeu* jeu)
+{
+    Tourelle* curTourelle = jeu->tourelles;
+
+    while (curTourelle != NULL)
+    {
+        if (curTourelle->type == 0)
+        {
+            basicTowerAttack(jeu, curTourelle);
+        }
+        curTourelle = curTourelle->next;
+    }
+}
+
+void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
+{
+    Etudiant* prevEtudiant = NULL;
+    Etudiant* curEtudiant = jeu->etudiants;
+
+    while (curEtudiant != NULL)
+    {
+        // iterate till we find the etudiant in the same ligne as the tourelle
+        if (tourelle->ligne == curEtudiant->ligne)
+        {
+            curEtudiant->pointsDeVie--;
+            if (curEtudiant->pointsDeVie <= 0)
+            {
+                if (prevEtudiant == NULL)
+                {
+                    jeu->etudiants = curEtudiant->next;
+                    free(curEtudiant);
+                }
+                else
+                { 
+                    prevEtudiant->next = curEtudiant->next;
+                    free(curEtudiant);
+                }
+            }
+            // We can return here since basic tower attacks the first eutudiant in the ligne
+            return;
+        }
+        prevEtudiant = curEtudiant;
+        curEtudiant = curEtudiant->next;
+    }
 }
