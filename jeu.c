@@ -23,7 +23,8 @@ void printTour (const Jeu *jeu)
             // Check if a cell is occupied by an etudiant
             while (curEtudiant != NULL)
             {        
-                if ( ligne == curEtudiant->ligne && pos == curEtudiant->position)
+                if ( ligne == curEtudiant->ligne && pos == curEtudiant->position
+                    && curEtudiant->type == NORMAL)
                 {
                     printf("%dZ  ", curEtudiant->pointsDeVie);
                     cellOccupied = true;
@@ -141,7 +142,7 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
 
             if (type == 'Z') 
             {
-                etudiant->type = 0;
+                etudiant->type = NORMAL;
                 etudiant->pointsDeVie = 5;
             }
 
@@ -171,7 +172,7 @@ void moveEtudiants(Jeu *jeu)
 
     while (curEtudiant != NULL)
     {        
-        curEtudiant->position--;
+        curEtudiant->position = curEtudiant->position - stepSize[curEtudiant->type];
         curEtudiant = curEtudiant->next;   
     }
 }

@@ -1,8 +1,20 @@
 #ifndef ETUDIANT_H
 #define ETUDIANT_H
 
+enum EtudiantType {
+    NORMAL = 0,
+    RAPIDE = 1,
+    COSTAUD = 2
+};
+
+static const int stepSize[] = {
+    [NORMAL] = 1,
+    [RAPIDE] = 2,
+    [COSTAUD] = 1
+};
+
 typedef struct etudiant {
-int type;
+enum EtudiantType type;
 int pointsDeVie;
 int ligne;
 int position;
