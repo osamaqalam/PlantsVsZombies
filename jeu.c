@@ -172,7 +172,7 @@ void moveEtudiants(Jeu *jeu)
 
     while (curEtudiant != NULL)
     {        
-        curEtudiant->position = curEtudiant->position - stepSize[curEtudiant->type];
+        curEtudiant->position = curEtudiant->position - STEP_SIZE[curEtudiant->type];
         curEtudiant = curEtudiant->next;   
     }
 }

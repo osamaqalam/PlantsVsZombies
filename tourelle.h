@@ -3,7 +3,15 @@
 
 #include <stdbool.h>
 
-static const int TOURELLE_PRICES[] = {100, 200, 300, 400};
+enum TourelleType {
+    BASIC = 0,
+    ADVANCED = 1
+};
+
+static const int TOURELLE_PRICES[] = {
+    [BASIC] = 100,
+    [ADVANCED] = 200
+};
 
 typedef struct tourelle {
 int type;

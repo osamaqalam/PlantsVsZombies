@@ -7,7 +7,7 @@ enum EtudiantType {
     COSTAUD = 2
 };
 
-static const int stepSize[] = {
+static const int STEP_SIZE[] = {
     [NORMAL] = 1,
     [RAPIDE] = 2,
     [COSTAUD] = 1
