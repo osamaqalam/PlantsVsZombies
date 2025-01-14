@@ -6,6 +6,15 @@ void initJeu(Jeu *jeu, int cagnotte)
     jeu->cagnotte = cagnotte;
     jeu->etudiants = NULL;
     jeu->tourelles = NULL;
+
+    for (int i = 0; i < NUM_COLS; i++)
+    {
+        for (int j = 0; j < NUM_LIGNES; j++)
+        {
+            jeu->grille[i][j].ptr = NULL;
+            jeu->grille[i][j].type = VIDE;
+        }
+    }
 }
 
 void printTour (const Jeu *jeu)
@@ -16,36 +25,25 @@ void printTour (const Jeu *jeu)
         printf("%d", ligne);
         printf("|   ");
         for (int pos = 1; pos <= 15; pos++) {
-            Etudiant* curEtudiant = jeu->etudiants;
-            Tourelle* curTourelle = jeu->tourelles;
-            bool cellOccupied = false;
-
+        
             // Check if a cell is occupied by an etudiant
-            while (curEtudiant != NULL)
-            {        
-                if ( ligne == curEtudiant->ligne && pos == curEtudiant->position
-                    && curEtudiant->type == NORMAL)
-                {
-                    printf("%dZ  ", curEtudiant->pointsDeVie);
-                    cellOccupied = true;
-                    break;
-                }  
-                curEtudiant = curEtudiant->next;   
+            if(jeu->grille[pos-1][ligne-1].type == ETUDIANT)
+            {
+                Etudiant* etudiant = (Etudiant*)jeu->grille[pos-1][ligne-1].ptr;
+                if (etudiant->type == NORMAL)
+                    printf("%dZ  ", etudiant->pointsDeVie);
+                continue;
             }
-
+            
             // Check if a cell is occupied by a tourelle
-            while (curTourelle != NULL)
-            {        
-                if ( ligne == curTourelle->ligne && pos == curTourelle->position)
-                {
-                    printf("%dT  ", curTourelle->pointsDeVie);
-                    cellOccupied = true;
-                    break;
-                }  
-                curTourelle = curTourelle->next;   
+            else if (jeu->grille[pos-1][ligne-1].type == TOURELLE)
+            {
+                Tourelle* tourelle = (Tourelle*)jeu->grille[pos-1][ligne-1].ptr;
+                if (tourelle->type == BASIC)
+                    printf("%dT  ", tourelle->pointsDeVie);
+                continue;
             }
-
-            if (!cellOccupied) 
+            else
                 printf(".   ");
         }
         printf("\n");
@@ -102,10 +100,6 @@ char* readFile(const char* filePath)
     // Close the file
     fclose(file);
 
-    // Debugging: Print file size and bytes read
-    // printf("Expected file size: %ld bytes\n", fileSize);
-    // printf("Bytes read: %zu bytes\n", bytesRead);
-
     return buffer;
 }
 
@@ -144,6 +138,12 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
             {
                 etudiant->type = NORMAL;
                 etudiant->pointsDeVie = 5;
+            }
+
+            if (etudiant->position <= NUM_COLS)
+            {
+                jeu->grille[etudiant->position-1][etudiant->ligne-1].ptr = etudiant;
+                jeu->grille[etudiant->position-1][etudiant->ligne-1].type = ETUDIANT;
             }
 
             // if not first etudiant
@@ -195,7 +195,6 @@ bool isPassingAllowed(Jeu* jeu, Etudiant* movingEtudiant)
     return true;
 }
 
-
 void moveEtudiants(Jeu *jeu)
 {
     Etudiant* curEtudiant = jeu->etudiants;
@@ -203,8 +202,24 @@ void moveEtudiants(Jeu *jeu)
     while (curEtudiant != NULL)
     {   
         // Only move etudiant if the path is clear
-        if(isPassingAllowed(jeu, curEtudiant))    
+        if(isPassingAllowed(jeu, curEtudiant))
+        {    
+            // Clear the current cell if the etudiant is in the range of visible arena
+            if (curEtudiant->position - 1 >= 0 && curEtudiant->position - 1 < NUM_COLS)
+            {
+                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].ptr = NULL;
+                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].type = VIDE;
+            }
+
             curEtudiant->position = curEtudiant->position - STEP_SIZE[curEtudiant->type];
+
+            // Set the new cell if the etudiant is in the range of visible arena
+            if (curEtudiant->position - 1 >= 0 && curEtudiant->position - 1 < NUM_COLS)
+            {
+                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].ptr = curEtudiant;
+                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].type = ETUDIANT;
+            }
+        }
         curEtudiant = curEtudiant->next;   
     }
 }
@@ -233,6 +248,7 @@ bool checkGameOver(Jeu *jeu)
     return false;
 }
 
+// x, y are 1-indexed
 bool placeTourelle(Jeu* jeu, int type, int x, int y) 
 {
 
@@ -244,6 +260,9 @@ bool placeTourelle(Jeu* jeu, int type, int x, int y)
     tourelle->position = x;
     tourelle->prix = TOURELLE_PRICES[type];
     tourelle->next = NULL;
+
+    jeu->grille[x-1][y-1].ptr = tourelle;
+    jeu->grille[x-1][y-1].type = TOURELLE;
 
     Tourelle* curTourelle = jeu->tourelles;
     if (curTourelle == NULL) {
@@ -285,6 +304,9 @@ void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
             curEtudiant->pointsDeVie--;
             if (curEtudiant->pointsDeVie <= 0)
             {
+                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].ptr = NULL;
+                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].type = VIDE;
+
                 if (prevEtudiant == NULL)
                 {
                     jeu->etudiants = curEtudiant->next;

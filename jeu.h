@@ -10,11 +10,24 @@
 #include "etudiant.h"
 
 #define MAX_LINE_LENGTH 100
+#define NUM_LIGNES 7
 #define NUM_COLS 15
+
+typedef enum{
+    ETUDIANT,
+    TOURELLE,
+    VIDE
+} ObjectType;
+
+typedef struct {
+    void* ptr;
+    ObjectType type;
+} CellPointer;
 
 typedef struct {
 Tourelle* tourelles;
 Etudiant* etudiants;
+CellPointer grille[NUM_COLS][NUM_LIGNES];
 int cagnotte;
 int tour;
 } Jeu;

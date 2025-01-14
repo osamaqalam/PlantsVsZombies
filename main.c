@@ -73,9 +73,9 @@ int main() {
             printTour(jeu);
             towersAttack(jeu);
             moveEtudiants(jeu);
-            jeu->tour++;
+            jeu->tour = jeu->tour + 1;
         }
-        free(contents); // Free the allocated memory
+        free(contents); 
     }
     free (jeu);
 }
