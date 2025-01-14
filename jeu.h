@@ -23,6 +23,7 @@ void initJeu (Jeu *j, int cagnotte);
 void printTour (const Jeu *j);
 char* readFile(const char* filePath);
 int parseFileContent(const char* fileContents, Jeu *jeu);
+bool isPassingAllowed(Jeu* jeu, Etudiant* movingEtudiant);
 void moveEtudiants(Jeu *jeu);
 bool checkGameOver(Jeu *jeu);
 bool placeTourelle(Jeu* jeu, int type, int x, int y);

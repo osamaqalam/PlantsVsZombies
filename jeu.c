@@ -166,13 +166,45 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
     return lineCount;
 }
 
+// Checks if the path is clear for the etudiant to pass
+bool isPassingAllowed(Jeu* jeu, Etudiant* movingEtudiant)
+{
+    Etudiant* curEtudiant = jeu->etudiants;
+    Tourelle* curTourelle = jeu->tourelles;
+
+    while (curEtudiant != NULL)
+    {
+        if (curEtudiant != movingEtudiant && curEtudiant->ligne == movingEtudiant->ligne &&
+            curEtudiant->position <= movingEtudiant->position && curEtudiant->position >= movingEtudiant->position-STEP_SIZE[movingEtudiant->type])
+        {
+            return false;
+        }
+        curEtudiant = curEtudiant->next;
+    }
+
+    while (curTourelle != NULL)
+    {
+        if (curTourelle->ligne == movingEtudiant->ligne && curTourelle->position <= movingEtudiant->position
+         && curTourelle->position >= movingEtudiant->position-STEP_SIZE[movingEtudiant->type])
+        {
+            return false;
+        }
+        curTourelle = curTourelle->next;
+    }
+
+    return true;
+}
+
+
 void moveEtudiants(Jeu *jeu)
 {
     Etudiant* curEtudiant = jeu->etudiants;
 
     while (curEtudiant != NULL)
-    {        
-        curEtudiant->position = curEtudiant->position - STEP_SIZE[curEtudiant->type];
+    {   
+        // Only move etudiant if the path is clear
+        if(isPassingAllowed(jeu, curEtudiant))    
+            curEtudiant->position = curEtudiant->position - STEP_SIZE[curEtudiant->type];
         curEtudiant = curEtudiant->next;   
     }
 }
