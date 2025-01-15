@@ -166,7 +166,8 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
     return lineCount;
 }
 
-// Checks if the path is clear for the etudiant to pass
+
+// If there is an object in the path of the etudiant, it will be stored in firstObj
 void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj)
 {
     Etudiant* curEtudiant = jeu->etudiants;
@@ -272,18 +273,22 @@ bool placeTourelle(Jeu* jeu, int type, int x, int y)
     tourelle->ligne = y;
     tourelle->position = x;
     tourelle->prix = TOURELLE_PRICES[type];
+    tourelle->prev = NULL;
     tourelle->next = NULL;
 
     jeu->grille[x-1][y-1].ptr = tourelle;
     jeu->grille[x-1][y-1].type = TOURELLE;
 
+    Tourelle* prevTourelle = NULL;
     Tourelle* curTourelle = jeu->tourelles;
     if (curTourelle == NULL) {
         jeu->tourelles = tourelle;
     } else {
         while (curTourelle->next != NULL) {
+            prevTourelle = curTourelle;
             curTourelle = curTourelle->next;
         }
+        tourelle->prev = curTourelle;
         curTourelle->next = tourelle;
     }
 
@@ -346,30 +351,23 @@ void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle)
 
     if (tourelle->pointsDeVie <= 0)
     {
+        Tourelle* prevTourelle = tourelle->prev;
+
         jeu->grille[tourelle->position-1][tourelle->ligne-1].ptr = NULL;
-        jeu->grille[tourelle->position-1][tourelle->ligne-1].type = VIDE;   
+        jeu->grille[tourelle->position-1][tourelle->ligne-1].type = VIDE;
+        
+        // Case of tourelle to be deleted is the first one added
+        if (prevTourelle == NULL)
+            jeu->tourelles = tourelle->next;
 
-        Tourelle* prevTourelle = NULL;
-        Tourelle* curTourelle = jeu->tourelles;
+        // Case of tourelle to be deleted is a later added one
+        else
+            prevTourelle->next = tourelle->next;
 
-        while (curTourelle != NULL)
-        {
-            if (curTourelle == tourelle)
-            {
-                if (prevTourelle == NULL)
-                {
-                    jeu->tourelles = curTourelle->next;
-                    free(curTourelle);
-                }
-                else
-                {
-                    prevTourelle->next = curTourelle->next;
-                    free(curTourelle);
-                }
-                break;
-            }
-            prevTourelle = curTourelle;
-            curTourelle = curTourelle->next;
-        }
+        // Fix the prev pointer of the next tourelle
+        if (tourelle->next != NULL)
+            (tourelle->next)->prev = prevTourelle;
+
+        free(tourelle);         
     }
 }
