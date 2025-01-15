@@ -36,12 +36,13 @@ void initJeu (Jeu *j, int cagnotte);
 void printTour (const Jeu *j);
 char* readFile(const char* filePath);
 int parseFileContent(const char* fileContents, Jeu *jeu);
-bool isPassingAllowed(Jeu* jeu, Etudiant* movingEtudiant);
+void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj);
 void moveEtudiants(Jeu *jeu);
 bool checkGameOver(Jeu *jeu);
 bool placeTourelle(Jeu* jeu, int type, int x, int y);
 void towersAttack(Jeu* jeu);
 void basicTowerAttack(Jeu* jeu, Tourelle* tourelle);
+void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle);
 
 
 #endif

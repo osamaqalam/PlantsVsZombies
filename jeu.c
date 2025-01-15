@@ -167,7 +167,7 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
 }
 
 // Checks if the path is clear for the etudiant to pass
-bool isPassingAllowed(Jeu* jeu, Etudiant* movingEtudiant)
+void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj)
 {
     Etudiant* curEtudiant = jeu->etudiants;
     Tourelle* curTourelle = jeu->tourelles;
@@ -177,7 +177,9 @@ bool isPassingAllowed(Jeu* jeu, Etudiant* movingEtudiant)
         if (curEtudiant != movingEtudiant && curEtudiant->ligne == movingEtudiant->ligne &&
             curEtudiant->position <= movingEtudiant->position && curEtudiant->position >= movingEtudiant->position-STEP_SIZE[movingEtudiant->type])
         {
-            return false;
+            firstObj->ptr = curEtudiant;
+            firstObj->type = ETUDIANT;
+            return;
         }
         curEtudiant = curEtudiant->next;
     }
@@ -187,22 +189,28 @@ bool isPassingAllowed(Jeu* jeu, Etudiant* movingEtudiant)
         if (curTourelle->ligne == movingEtudiant->ligne && curTourelle->position <= movingEtudiant->position
          && curTourelle->position >= movingEtudiant->position-STEP_SIZE[movingEtudiant->type])
         {
-            return false;
+            firstObj->ptr = curTourelle;
+            firstObj->type = TOURELLE;
+            return;
         }
         curTourelle = curTourelle->next;
     }
 
-    return true;
+    firstObj->ptr = NULL;
+    firstObj->type = VIDE;
 }
 
 void moveEtudiants(Jeu *jeu)
 {
     Etudiant* curEtudiant = jeu->etudiants;
+    CellPointer* cell = malloc(sizeof(CellPointer));
 
     while (curEtudiant != NULL)
     {   
+        encounteredObject(jeu, curEtudiant, cell);
+
         // Only move etudiant if the path is clear
-        if(isPassingAllowed(jeu, curEtudiant))
+        if(cell->type == VIDE)
         {    
             // Clear the current cell if the etudiant is in the range of visible arena
             if (curEtudiant->position - 1 >= 0 && curEtudiant->position - 1 < NUM_COLS)
@@ -219,6 +227,11 @@ void moveEtudiants(Jeu *jeu)
                 jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].ptr = curEtudiant;
                 jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].type = ETUDIANT;
             }
+        }
+        else if (cell->type == TOURELLE)
+        {
+            Tourelle* tourelle = (Tourelle*)cell->ptr;
+            etudiantAttack(jeu, curEtudiant, tourelle);
         }
         curEtudiant = curEtudiant->next;   
     }
@@ -323,5 +336,40 @@ void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
         }
         prevEtudiant = curEtudiant;
         curEtudiant = curEtudiant->next;
+    }
+}
+
+void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle)
+{
+    if(etudiant->type == NORMAL)
+        tourelle->pointsDeVie -= 1;
+
+    if (tourelle->pointsDeVie <= 0)
+    {
+        jeu->grille[tourelle->position-1][tourelle->ligne-1].ptr = NULL;
+        jeu->grille[tourelle->position-1][tourelle->ligne-1].type = VIDE;   
+
+        Tourelle* prevTourelle = NULL;
+        Tourelle* curTourelle = jeu->tourelles;
+
+        while (curTourelle != NULL)
+        {
+            if (curTourelle == tourelle)
+            {
+                if (prevTourelle == NULL)
+                {
+                    jeu->tourelles = curTourelle->next;
+                    free(curTourelle);
+                }
+                else
+                {
+                    prevTourelle->next = curTourelle->next;
+                    free(curTourelle);
+                }
+                break;
+            }
+            prevTourelle = curTourelle;
+            curTourelle = curTourelle->next;
+        }
     }
 }
