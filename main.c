@@ -70,9 +70,9 @@ int main() {
 
         while (!checkGameOver(jeu))
         {
-            printTour(jeu);
             towersAttack(jeu);
             moveEtudiants(jeu);
+            printTour(jeu);
             jeu->tour = jeu->tour + 1;
         }
         free(contents); 

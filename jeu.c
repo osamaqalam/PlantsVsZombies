@@ -132,7 +132,7 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
             }
 
             sscanf(buffer, "%d %d %c", &etudiant->tour, &etudiant->ligne, &type);
-            etudiant->position = NUM_COLS+etudiant->tour-1; // Start 
+            etudiant->position = NUM_COLS+etudiant->tour; // Start 
 
             if (type == 'Z') 
             {
@@ -243,12 +243,11 @@ bool checkGameOver(Jeu *jeu)
 
     while (curEtudiant != NULL)
     {
-        if (curEtudiant->position <= 0)
+        if (curEtudiant->position <= 1)
         {
             printf("GAME OVER - YOU LOSE!\n");
             return true;
         }
-
         curEtudiant = curEtudiant->next;
     }
 
@@ -303,7 +302,7 @@ void towersAttack(Jeu* jeu)
 
     while (curTourelle != NULL)
     {
-        if (curTourelle->type == 0)
+        if (curTourelle->type == BASIC)
         {
             basicTowerAttack(jeu, curTourelle);
         }
@@ -318,8 +317,9 @@ void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
 
     while (curEtudiant != NULL)
     {
-        // iterate till we find the etudiant in the same ligne as the tourelle
-        if (tourelle->ligne == curEtudiant->ligne)
+        // iterate till we find the etudiant in the same ligne as the tourelle and
+        // etudiant is in the displayable arena
+        if (tourelle->ligne == curEtudiant->ligne && curEtudiant->position <= NUM_COLS)
         {
             curEtudiant->pointsDeVie--;
             if (curEtudiant->pointsDeVie <= 0)
