@@ -262,8 +262,11 @@ bool checkGameOver(Jeu *jeu)
 }
 
 // x, y are 1-indexed
-bool placeTourelle(Jeu* jeu, int type, int x, int y) 
+bool placeTourelle(Jeu* restrict jeu, int type, int x, int y) 
 {
+    if(jeu->grille[x-1][y-1].type != VIDE ||
+        x < 1 || x >= NUM_COLS || y < 1 || y > NUM_LIGNES)
+        return false;
 
     Tourelle* tourelle = (Tourelle*)malloc(sizeof(Tourelle));
     tourelle->type = type;
