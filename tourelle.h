@@ -13,7 +13,7 @@ static const int TOURELLE_PRICES[] = {
     [ADVANCED] = 200
 };
 
-typedef struct tourelle{
+typedef struct tourelle {
 int type;
 int pointsDeVie;
 int ligne;

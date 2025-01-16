@@ -1,6 +1,6 @@
 #include "jeu.h"
 
-void initJeu(Jeu *jeu, int cagnotte) 
+void initJeu(Jeu* restrict jeu, int cagnotte) 
 {
     jeu->tour = 1;
     jeu->cagnotte = cagnotte;
@@ -17,7 +17,7 @@ void initJeu(Jeu *jeu, int cagnotte)
     }
 }
 
-void printTour (const Jeu *jeu)
+void printTour (const Jeu* restrict jeu)
 {
     printf("Tour %d\n", jeu->tour);
 
@@ -165,7 +165,6 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
     lastEtudiant->next = NULL;
     return lineCount;
 }
-
 
 // If there is an object in the path of the etudiant, it will be stored in firstObj
 void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj)
