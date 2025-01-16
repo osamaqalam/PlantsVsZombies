@@ -148,10 +148,13 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
 
             // if not first etudiant
             if (lastEtudiant) 
+            {
+                etudiant->prev = lastEtudiant;
                 lastEtudiant->next = etudiant;
+            }
             else
-            { 
-                //printf("etudiants was initialized with %d %d %d", etudiant->tour, etudiant->ligne, etudiant->type);
+            {
+                etudiant->prev = NULL;
                 jeu->etudiants = etudiant;
             }
 
@@ -312,37 +315,39 @@ void towersAttack(Jeu* jeu)
 
 void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
 {
-    Etudiant* prevEtudiant = NULL;
-    Etudiant* curEtudiant = jeu->etudiants;
+    const int ligne = tourelle->ligne;
 
-    while (curEtudiant != NULL)
+    for(int i = tourelle->position+1; i <= NUM_COLS; i++)
     {
         // iterate till we find the etudiant in the same ligne as the tourelle and
         // etudiant is in the displayable arena
-        if (tourelle->ligne == curEtudiant->ligne && curEtudiant->position <= NUM_COLS)
+        if (jeu->grille[i-1][ligne-1].type == ETUDIANT)
         {
-            curEtudiant->pointsDeVie--;
-            if (curEtudiant->pointsDeVie <= 0)
-            {
-                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].ptr = NULL;
-                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].type = VIDE;
+            Etudiant* damagedEtudiant = (Etudiant*)jeu->grille[i-1][ligne-1].ptr;
+            damagedEtudiant->pointsDeVie--;
 
-                if (prevEtudiant == NULL)
+            if (damagedEtudiant->pointsDeVie <= 0)
+            {
+                jeu->grille[i-1][ligne-1].ptr = NULL;
+                jeu->grille[i-1][ligne-1].type = VIDE;
+
+                // Correct the pointers of the dead etudiant
+                if (damagedEtudiant == jeu->etudiants)
                 {
-                    jeu->etudiants = curEtudiant->next;
-                    free(curEtudiant);
+                    jeu->etudiants = damagedEtudiant->next;
+                    damagedEtudiant->next->prev = NULL;
+                    free(damagedEtudiant);
                 }
                 else
                 { 
-                    prevEtudiant->next = curEtudiant->next;
-                    free(curEtudiant);
+                    damagedEtudiant->prev->next = damagedEtudiant->next;
+                    damagedEtudiant->next->prev = damagedEtudiant->prev;
+                    free(damagedEtudiant);
                 }
             }
             // We can return here since basic tower attacks the first eutudiant in the ligne
             return;
         }
-        prevEtudiant = curEtudiant;
-        curEtudiant = curEtudiant->next;
     }
 }
 

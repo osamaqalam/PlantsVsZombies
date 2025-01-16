@@ -20,6 +20,7 @@ int ligne;
 int position;
 int vitesse;
 int tour;
+struct etudiant* prev;
 struct etudiant* next;
 struct etudiant* next_line;
 struct etudiant* prev_line;
