@@ -1,5 +1,6 @@
 #include "jeu.h"
 
+
 void initializeTourelle(Jeu* jeu, int type) {
 
     if (!canPurchaseTourelle(jeu->cagnotte, type)) 
@@ -74,6 +75,7 @@ int main() {
             moveEtudiants(jeu);
             printTour(jeu);
             jeu->tour = jeu->tour + 1;
+            sleep(1);
         }
         free(contents); 
     }
