@@ -103,6 +103,33 @@ char* readFile(const char* filePath)
     return buffer;
 }
 
+void connectLinesPtrs (Jeu* jeu)
+{
+    for (int i=1; i<=NUM_LIGNES; i++)
+    {
+        Etudiant* curEtudiant = jeu->etudiants;
+        Etudiant* prevEtudiantLigne = NULL;
+
+        while(curEtudiant)
+        {
+            if (curEtudiant->ligne == i)
+            {
+                if (prevEtudiantLigne)
+                {
+                    prevEtudiantLigne->next_line = curEtudiant;
+                    curEtudiant->prev_line = prevEtudiantLigne;
+                }
+                else
+                {
+                    curEtudiant->prev_line = NULL;
+                }
+                prevEtudiantLigne = curEtudiant;
+            }
+            curEtudiant = curEtudiant->next;
+        }
+    }
+}
+
 int parseFileContent(const char* fileContents, Jeu *jeu)
 {
     // Parse the file contents
@@ -130,6 +157,8 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
                 perror("Error allocating memory for Etudiant");
                 return -1; // Return an error code
             }
+
+            initEtudiant(etudiant);
 
             sscanf(buffer, "%d %d %c", &etudiant->tour, &etudiant->ligne, &type);
             etudiant->position = NUM_COLS+etudiant->tour; // Start 
@@ -166,6 +195,9 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
 
     }
     lastEtudiant->next = NULL;
+
+    connectLinesPtrs(jeu);
+
     return lineCount;
 }
 
@@ -336,14 +368,20 @@ void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
                 {
                     jeu->etudiants = damagedEtudiant->next;
                     damagedEtudiant->next->prev = NULL;
-                    free(damagedEtudiant);
                 }
                 else
                 { 
                     damagedEtudiant->prev->next = damagedEtudiant->next;
                     damagedEtudiant->next->prev = damagedEtudiant->prev;
-                    free(damagedEtudiant);
                 }
+
+                if (damagedEtudiant->next_line != NULL)
+                    damagedEtudiant->next_line->prev_line = damagedEtudiant->prev_line;
+
+                if (damagedEtudiant->prev_line != NULL)
+                     damagedEtudiant->prev_line->next_line = damagedEtudiant->next_line;
+
+                free(damagedEtudiant);
             }
             // We can return here since basic tower attacks the first eutudiant in the ligne
             return;

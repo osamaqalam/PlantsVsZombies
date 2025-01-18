@@ -1,6 +1,8 @@
 #ifndef ETUDIANT_H
 #define ETUDIANT_H
 
+#include <stddef.h> // for NULL
+
 enum EtudiantType {
     NORMAL = 0,
     RAPIDE = 1,
@@ -25,5 +27,7 @@ struct etudiant* next;
 struct etudiant* next_line;
 struct etudiant* prev_line;
 } Etudiant;
+
+void initEtudiant(Etudiant* etudiant);
 
 #endif
