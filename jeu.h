@@ -49,5 +49,6 @@ void nukeTowerAttack (Jeu* jeu, Tourelle* tourelle);
 
 void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle);
 
+void freeJeu(Jeu* jeu);
 
 #endif

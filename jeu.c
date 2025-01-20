@@ -206,13 +206,14 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
 // If there is an object in the path of the etudiant, it will be stored in firstObj
 void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj)
 {
+    int FinalPosition = movingEtudiant->position - STEP_SIZE[movingEtudiant->type];
     Etudiant* curEtudiant = jeu->etudiants;
     Tourelle* curTourelle = jeu->tourelles;
 
     while (curEtudiant != NULL)
     {
         if (curEtudiant != movingEtudiant && curEtudiant->ligne == movingEtudiant->ligne &&
-            curEtudiant->position <= movingEtudiant->position && curEtudiant->position >= movingEtudiant->position-STEP_SIZE[movingEtudiant->type])
+            curEtudiant->position <= movingEtudiant->position && curEtudiant->position >= FinalPosition)
         {
             firstObj->ptr = curEtudiant;
             firstObj->type = ETUDIANT;
@@ -224,7 +225,7 @@ void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj
     while (curTourelle != NULL)
     {
         if (curTourelle->ligne == movingEtudiant->ligne && curTourelle->position <= movingEtudiant->position
-         && curTourelle->position >= movingEtudiant->position-STEP_SIZE[movingEtudiant->type])
+         && curTourelle->position >= FinalPosition)
         {
             firstObj->ptr = curTourelle;
             firstObj->type = TOURELLE;
@@ -272,6 +273,7 @@ void moveEtudiants(Jeu *jeu)
         }
         curEtudiant = curEtudiant->next;   
     }
+    free(cell);
 }
 
 bool checkGameOver(Jeu *jeu)
@@ -474,4 +476,29 @@ void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle)
 
         free(tourelle);         
     }
+}
+
+void freeJeu(Jeu* jeu)
+{
+    Etudiant* curEtudiant = jeu->etudiants;
+    Etudiant* nextEtudiant = NULL;
+
+    while (curEtudiant != NULL)
+    {
+        nextEtudiant = curEtudiant->next;
+        free(curEtudiant);
+        curEtudiant = nextEtudiant;
+    }
+
+    Tourelle* curTourelle = jeu->tourelles;
+    Tourelle* nextTourelle = NULL;
+
+    while (curTourelle != NULL)
+    {
+        nextTourelle = curTourelle->next;
+        free(curTourelle);
+        curTourelle = nextTourelle;
+    }
+
+    free(jeu);
 }

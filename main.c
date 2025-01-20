@@ -82,7 +82,7 @@ int main() {
         }
         free(contents); 
     }
-    free (jeu);
+    freeJeu(jeu);
 }
 
 
