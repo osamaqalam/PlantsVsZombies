@@ -5,12 +5,12 @@
 
 enum TourelleType {
     BASIC = 0,
-    ADVANCED = 1
+    NUKE = 1
 };
 
 static const int TOURELLE_PRICES[] = {
     [BASIC] = 100,
-    [ADVANCED] = 200
+    [NUKE] = 300
 };
 
 typedef struct tourelle {
@@ -19,6 +19,7 @@ int pointsDeVie;
 int ligne;
 int position;
 int prix;
+int nukeTriggerTurn;
 struct tourelle* prev;
 struct tourelle* next;
 } Tourelle;

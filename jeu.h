@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>      // for srand(time(NULL))
 #include <unistd.h>    // for sleep()
 #include "tourelle.h"
 #include "etudiant.h"
@@ -40,9 +41,12 @@ int parseFileContent(const char* fileContents, Jeu *jeu);
 void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj);
 void moveEtudiants(Jeu *jeu);
 bool checkGameOver(Jeu *jeu);
-bool placeTourelle(Jeu* jeu, int type, int x, int y);
+
+bool placeTourelle(Jeu* jeu, enum TourelleType type, int x, int y);
 void towersAttack(Jeu* jeu);
 void basicTowerAttack(Jeu* jeu, Tourelle* tourelle);
+void nukeTowerAttack (Jeu* jeu, Tourelle* tourelle);
+
 void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle);
 
 

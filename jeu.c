@@ -41,6 +41,8 @@ void printTour (const Jeu* restrict jeu)
                 Tourelle* tourelle = (Tourelle*)jeu->grille[pos-1][ligne-1].ptr;
                 if (tourelle->type == BASIC)
                     printf("%dT  ", tourelle->pointsDeVie);
+                else if (tourelle->type == NUKE)
+                    printf("%dN  ", tourelle->pointsDeVie);
                 continue;
             }
             else
@@ -296,7 +298,7 @@ bool checkGameOver(Jeu *jeu)
 }
 
 // x, y are 1-indexed
-bool placeTourelle(Jeu* restrict jeu, int type, int x, int y) 
+bool placeTourelle(Jeu* restrict jeu, enum TourelleType type, int x, int y) 
 {
     if(jeu->grille[x-1][y-1].type != VIDE ||
         x < 1 || x >= NUM_COLS || y < 1 || y > NUM_LIGNES)
@@ -304,8 +306,17 @@ bool placeTourelle(Jeu* restrict jeu, int type, int x, int y)
 
     Tourelle* tourelle = (Tourelle*)malloc(sizeof(Tourelle));
     tourelle->type = type;
-    if (type == 0)
+
+    if (type == BASIC)
         tourelle->pointsDeVie = 3;
+    else if (type == NUKE)
+    {
+        tourelle->pointsDeVie = 1;
+        
+        srand(time(NULL)); // use current time as seed for random generator
+        tourelle->nukeTriggerTurn = (rand() % 5) + 1;
+    }
+
     tourelle->ligne = y;
     tourelle->position = x;
     tourelle->prix = TOURELLE_PRICES[type];
@@ -340,6 +351,13 @@ void towersAttack(Jeu* jeu)
         if (curTourelle->type == BASIC)
         {
             basicTowerAttack(jeu, curTourelle);
+        }
+        else if (curTourelle->type == NUKE)
+        {
+            if (jeu->tour == curTourelle->nukeTriggerTurn)
+            {
+                nukeTowerAttack(jeu, curTourelle);
+            }
         }
         curTourelle = curTourelle->next;
     }
@@ -385,6 +403,47 @@ void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
             }
             // We can return here since basic tower attacks the first eutudiant in the ligne
             return;
+        }
+    }
+}
+
+void nukeTowerAttack (Jeu* jeu, Tourelle* tourelle)
+{
+    for(int i = 1; i <= NUM_COLS; i++)
+    {
+        for (int j=1; j<=NUM_LIGNES; j++)
+        {
+            if (jeu->grille[i-1][j-1].type == ETUDIANT)
+            {
+                Etudiant* damagedEtudiant = (Etudiant*)jeu->grille[i-1][j-1].ptr;
+                damagedEtudiant->pointsDeVie = 0;
+
+                if (damagedEtudiant->pointsDeVie <= 0)
+                {
+                    jeu->grille[i-1][j-1].ptr = NULL;
+                    jeu->grille[i-1][j-1].type = VIDE;
+
+                    // Correct the pointers of the dead etudiant
+                    if (damagedEtudiant == jeu->etudiants)
+                    {
+                        jeu->etudiants = damagedEtudiant->next;
+                        damagedEtudiant->next->prev = NULL;
+                    }
+                    else
+                    { 
+                        damagedEtudiant->prev->next = damagedEtudiant->next;
+                        damagedEtudiant->next->prev = damagedEtudiant->prev;
+                    }
+
+                    if (damagedEtudiant->next_line != NULL)
+                        damagedEtudiant->next_line->prev_line = damagedEtudiant->prev_line;
+
+                    if (damagedEtudiant->prev_line != NULL)
+                        damagedEtudiant->prev_line->next_line = damagedEtudiant->next_line;
+
+                    free(damagedEtudiant);
+                }
+            }
         }
     }
 }
