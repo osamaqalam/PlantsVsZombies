@@ -478,6 +478,7 @@ void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle)
     }
 }
 
+// hello
 void freeJeu(Jeu* jeu)
 {
     Etudiant* curEtudiant = jeu->etudiants;

@@ -2,14 +2,29 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "Build with Makefile",
             "type": "shell",
-            "command": "./build.bat",
+            "command": "make",
+            "args": [
+                "all"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$gcc"]
+            "problemMatcher": [],
+            "detail": "Build the project using the Makefile"
+        },
+        {
+            "label": "Clean with Makefile",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Clean the build using the Makefile"
         }
     ]
 }
