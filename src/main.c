@@ -1,5 +1,9 @@
 #include "jeu.h"
 
+void clearConsole() {
+    printf("\033[0;0H"); // on se place en haut à gauche
+    printf("\033[2J"); // on efface tout
+}
 
 void initializeTourelle(Jeu* jeu, enum TourelleType type) {
 
@@ -16,6 +20,7 @@ void initializeTourelle(Jeu* jeu, enum TourelleType type) {
     printf("y:");
     scanf("%d", &y);
 
+    clearConsole();
     if (placeTourelle(jeu, type, x, y)) {
         printf("Tourelle placed successfully.\n");
         jeu->cagnotte -= TOURELLE_PRICES[type];
@@ -24,7 +29,7 @@ void initializeTourelle(Jeu* jeu, enum TourelleType type) {
     }
 }
 
-void displayPurchaseMenu(Jeu* jeu) {
+int displayPurchaseMenu(Jeu* jeu) {
     int choice;
     printf("Purchase Menu: (Current Budget is %d)\n", jeu->cagnotte);
     printf("1. Basic Tower (Attacks first in Ligne)\n");
@@ -37,13 +42,16 @@ void displayPurchaseMenu(Jeu* jeu) {
         case 1:
             printf("You chose to buy a Basic Tower.\n");
             initializeTourelle(jeu, BASIC);
+            return 1;
             break;
         case 2:
             printf("You chose to buy a Nuke Tower.\n");
             initializeTourelle(jeu, NUKE);
+            return 2;
             break;
         case 3:
             printf("Exiting purchase menu.\n");
+            return 3;
             break;
         default:
             printf("Invalid choice. Please try again.\n");
@@ -61,10 +69,8 @@ int main() {
     initJeu(jeu, 1000);
 
     int continuePurchasing = 1;
-    while (continuePurchasing) {
-        displayPurchaseMenu(jeu);
-        printf("Do you want to add another tower? (1 for Yes, 0 for No): ");
-        scanf("%d", &continuePurchasing);
+    while (displayPurchaseMenu(jeu) != 3) {
+        printTour(jeu);
     }
 
     // The file for details of the enemies waves
@@ -74,12 +80,20 @@ int main() {
 
         while (!checkGameOver(jeu))
         {
+            clearConsole();
             towersAttack(jeu);
             moveEtudiants(jeu);
+
+            printf("Tour %d\n", jeu->tour);
             printTour(jeu);
+
             jeu->tour = jeu->tour + 1;
-            //sleep(1);
+            sleep(1);
         }
+        printf("Press Enter to exit...");
+        while (getchar() != '\n'); // Clear the input buffer
+        getchar(); // Wait for Enter key
+
         free(contents); 
     }
     freeJeu(jeu);

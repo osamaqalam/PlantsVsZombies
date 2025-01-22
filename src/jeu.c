@@ -19,8 +19,6 @@ void initJeu(Jeu* restrict jeu, int cagnotte)
 
 void printTour (const Jeu* restrict jeu)
 {
-    printf("Tour %d\n", jeu->tour);
-
     for (int ligne = 1; ligne <= 7; ligne++) {
         printf("%d", ligne);
         printf("|   ");
