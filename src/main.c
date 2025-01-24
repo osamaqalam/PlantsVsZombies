@@ -33,7 +33,7 @@ int displayPurchaseMenu(Jeu* jeu) {
     int choice;
     printf("Purchase Menu: (Current Budget is %d)\n", jeu->cagnotte);
     printf("1. Basic Tower (Attacks first in Ligne)\n");
-    printf("2. Nuke Tower (Kills all etudiants in the arena at a random turn between 1-5)\n");
+    printf("2. Nuke Tower (Kills all zombies in the arena at a random turn between 1-5)\n");
     printf("3. Exit\n");
     printf("Enter your choice: ");
     scanf("%d", &choice);
@@ -82,7 +82,7 @@ int main() {
         {
             clearConsole();
             towersAttack(jeu);
-            moveEtudiants(jeu);
+            moveZombies(jeu);
 
             printf("Tour %d\n", jeu->tour);
             printTour(jeu);

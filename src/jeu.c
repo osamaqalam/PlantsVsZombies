@@ -4,7 +4,7 @@ void initJeu(Jeu* restrict jeu, int cagnotte)
 {
     jeu->tour = 1;
     jeu->cagnotte = cagnotte;
-    jeu->etudiants = NULL;
+    jeu->zombies = NULL;
     jeu->tourelles = NULL;
 
     for (int i = 0; i < NUM_COLS; i++)
@@ -24,12 +24,12 @@ void printTour (const Jeu* restrict jeu)
         printf("|   ");
         for (int pos = 1; pos <= 15; pos++) {
         
-            // Check if a cell is occupied by an etudiant
-            if(jeu->grille[pos-1][ligne-1].type == ETUDIANT)
+            // Check if a cell is occupied by a zombie
+            if(jeu->grille[pos-1][ligne-1].type == ZOMBIE)
             {
-                Etudiant* etudiant = (Etudiant*)jeu->grille[pos-1][ligne-1].ptr;
-                if (etudiant->type == NORMAL)
-                    printf("%dZ  ", etudiant->pointsDeVie);
+                Zombie* zombie = (Zombie*)jeu->grille[pos-1][ligne-1].ptr;
+                if (zombie->type == NORMAL)
+                    printf("%dZ  ", zombie->pointsDeVie);
                 continue;
             }
             
@@ -107,25 +107,25 @@ void connectLinesPtrs (Jeu* jeu)
 {
     for (int i=1; i<=NUM_LIGNES; i++)
     {
-        Etudiant* curEtudiant = jeu->etudiants;
-        Etudiant* prevEtudiantLigne = NULL;
+        Zombie* curZombie = jeu->zombies;
+        Zombie* prevZombieLigne = NULL;
 
-        while(curEtudiant)
+        while(curZombie)
         {
-            if (curEtudiant->ligne == i)
+            if (curZombie->ligne == i)
             {
-                if (prevEtudiantLigne)
+                if (prevZombieLigne)
                 {
-                    prevEtudiantLigne->next_line = curEtudiant;
-                    curEtudiant->prev_line = prevEtudiantLigne;
+                    prevZombieLigne->next_line = curZombie;
+                    curZombie->prev_line = prevZombieLigne;
                 }
                 else
                 {
-                    curEtudiant->prev_line = NULL;
+                    curZombie->prev_line = NULL;
                 }
-                prevEtudiantLigne = curEtudiant;
+                prevZombieLigne = curZombie;
             }
-            curEtudiant = curEtudiant->next;
+            curZombie = curZombie->next;
         }
     }
 }
@@ -136,8 +136,8 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
     int lineCount = 0; // Tracks the number of parsed lines
     char buffer[MAX_LINE_LENGTH];
     const char* current = fileContents;
-    Etudiant* etudiant = NULL;
-    Etudiant* lastEtudiant = NULL;
+    Zombie* zombie = NULL;
+    Zombie* lastZombie = NULL;
 
     // Loop while there is a line to read
     // sscanf will store whatever is right after % in the later arguments
@@ -151,78 +151,78 @@ int parseFileContent(const char* fileContents, Jeu *jeu)
         {
             char type;
 
-            // Dynamically allocate memory for an instance of Etudiant
-            etudiant = (Etudiant*)malloc(sizeof(Etudiant));
-            if (etudiant == NULL) {
-                perror("Error allocating memory for Etudiant");
+            // Dynamically allocate memory for an instance of zombie
+            zombie = (Zombie*)malloc(sizeof(Zombie));
+            if (zombie == NULL) {
+                perror("Error allocating memory for Zombie");
                 return -1; // Return an error code
             }
 
-            initEtudiant(etudiant);
+            initZombie(zombie);
 
-            sscanf(buffer, "%d %d %c", &etudiant->tour, &etudiant->ligne, &type);
-            etudiant->position = NUM_COLS+etudiant->tour; // Start 
+            sscanf(buffer, "%d %d %c", &zombie->tour, &zombie->ligne, &type);
+            zombie->position = NUM_COLS+zombie->tour; // Start 
 
             if (type == 'Z') 
             {
-                etudiant->type = NORMAL;
-                etudiant->pointsDeVie = 5;
+                zombie->type = NORMAL;
+                zombie->pointsDeVie = 5;
             }
 
-            if (etudiant->position <= NUM_COLS)
+            if (zombie->position <= NUM_COLS)
             {
-                jeu->grille[etudiant->position-1][etudiant->ligne-1].ptr = etudiant;
-                jeu->grille[etudiant->position-1][etudiant->ligne-1].type = ETUDIANT;
+                jeu->grille[zombie->position-1][zombie->ligne-1].ptr = zombie;
+                jeu->grille[zombie->position-1][zombie->ligne-1].type = ZOMBIE;
             }
 
-            // if not first etudiant
-            if (lastEtudiant) 
+            // if not first zombie
+            if (lastZombie) 
             {
-                etudiant->prev = lastEtudiant;
-                lastEtudiant->next = etudiant;
+                zombie->prev = lastZombie;
+                lastZombie->next = zombie;
             }
             else
             {
-                etudiant->prev = NULL;
-                jeu->etudiants = etudiant;
+                zombie->prev = NULL;
+                jeu->zombies = zombie;
             }
 
-            lastEtudiant = etudiant;
+            lastZombie = zombie;
         }
         // Move to the next line
         current += strlen(buffer) + 1;
         lineCount++;
 
     }
-    lastEtudiant->next = NULL;
+    lastZombie->next = NULL;
 
     connectLinesPtrs(jeu);
 
     return lineCount;
 }
 
-// If there is an object in the path of the etudiant, it will be stored in firstObj
-void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj)
+// If there is an object in the path of the zombie, it will be stored in firstObj
+void encounteredObject(Jeu* jeu, Zombie* movingZombie, CellPointer* firstObj)
 {
-    int FinalPosition = movingEtudiant->position - STEP_SIZE[movingEtudiant->type];
-    Etudiant* curEtudiant = jeu->etudiants;
+    int FinalPosition = movingZombie->position - STEP_SIZE[movingZombie->type];
+    Zombie* curZombie = jeu->zombies;
     Tourelle* curTourelle = jeu->tourelles;
 
-    while (curEtudiant != NULL)
+    while (curZombie != NULL)
     {
-        if (curEtudiant != movingEtudiant && curEtudiant->ligne == movingEtudiant->ligne &&
-            curEtudiant->position <= movingEtudiant->position && curEtudiant->position >= FinalPosition)
+        if (curZombie != movingZombie && curZombie->ligne == movingZombie->ligne &&
+            curZombie->position <= movingZombie->position && curZombie->position >= FinalPosition)
         {
-            firstObj->ptr = curEtudiant;
-            firstObj->type = ETUDIANT;
+            firstObj->ptr = curZombie;
+            firstObj->type = ZOMBIE;
             return;
         }
-        curEtudiant = curEtudiant->next;
+        curZombie = curZombie->next;
     }
 
     while (curTourelle != NULL)
     {
-        if (curTourelle->ligne == movingEtudiant->ligne && curTourelle->position <= movingEtudiant->position
+        if (curTourelle->ligne == movingZombie->ligne && curTourelle->position <= movingZombie->position
          && curTourelle->position >= FinalPosition)
         {
             firstObj->ptr = curTourelle;
@@ -236,59 +236,59 @@ void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj
     firstObj->type = VIDE;
 }
 
-void moveEtudiants(Jeu *jeu)
+void moveZombies(Jeu *jeu)
 {
-    Etudiant* curEtudiant = jeu->etudiants;
+    Zombie* curZombie = jeu->zombies;
     CellPointer* cell = malloc(sizeof(CellPointer));
 
-    while (curEtudiant != NULL)
+    while (curZombie != NULL)
     {   
-        encounteredObject(jeu, curEtudiant, cell);
+        encounteredObject(jeu, curZombie, cell);
 
-        // Only move etudiant if the path is clear
+        // Only move zombie if the path is clear
         if(cell->type == VIDE)
         {    
-            // Clear the current cell if the etudiant is in the range of visible arena
-            if (curEtudiant->position - 1 >= 0 && curEtudiant->position - 1 < NUM_COLS)
+            // Clear the current cell if the zombie is in the range of visible arena
+            if (curZombie->position - 1 >= 0 && curZombie->position - 1 < NUM_COLS)
             {
-                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].ptr = NULL;
-                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].type = VIDE;
+                jeu->grille[curZombie->position-1][curZombie->ligne-1].ptr = NULL;
+                jeu->grille[curZombie->position-1][curZombie->ligne-1].type = VIDE;
             }
 
-            curEtudiant->position = curEtudiant->position - STEP_SIZE[curEtudiant->type];
+            curZombie->position = curZombie->position - STEP_SIZE[curZombie->type];
 
-            // Set the new cell if the etudiant is in the range of visible arena
-            if (curEtudiant->position - 1 >= 0 && curEtudiant->position - 1 < NUM_COLS)
+            // Set the new cell if the zombie is in the range of visible arena
+            if (curZombie->position - 1 >= 0 && curZombie->position - 1 < NUM_COLS)
             {
-                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].ptr = curEtudiant;
-                jeu->grille[curEtudiant->position-1][curEtudiant->ligne-1].type = ETUDIANT;
+                jeu->grille[curZombie->position-1][curZombie->ligne-1].ptr = curZombie;
+                jeu->grille[curZombie->position-1][curZombie->ligne-1].type = ZOMBIE;
             }
         }
         else if (cell->type == TOURELLE)
         {
             Tourelle* tourelle = (Tourelle*)cell->ptr;
-            etudiantAttack(jeu, curEtudiant, tourelle);
+            zombieAttack(jeu, curZombie, tourelle);
         }
-        curEtudiant = curEtudiant->next;   
+        curZombie = curZombie->next;   
     }
     free(cell);
 }
 
 bool checkGameOver(Jeu *jeu)
 {
-    Etudiant* curEtudiant = jeu->etudiants;
+    Zombie* curZombie = jeu->zombies;
 
-    while (curEtudiant != NULL)
+    while (curZombie != NULL)
     {
-        if (curEtudiant->position <= 1)
+        if (curZombie->position <= 1)
         {
             printf("GAME OVER - YOU LOSE!\n");
             return true;
         }
-        curEtudiant = curEtudiant->next;
+        curZombie = curZombie->next;
     }
 
-    if (jeu->etudiants == NULL)
+    if (jeu->zombies == NULL)
     {
         printf("GAME OVER - YOU WIN!\n");
         return true;
@@ -369,37 +369,37 @@ void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
 
     for(int i = tourelle->position+1; i <= NUM_COLS; i++)
     {
-        // iterate till we find the etudiant in the same ligne as the tourelle and
-        // etudiant is in the displayable arena
-        if (jeu->grille[i-1][ligne-1].type == ETUDIANT)
+        // iterate till we find the zombie in the same ligne as the tourelle and
+        // zombie is in the displayable arena
+        if (jeu->grille[i-1][ligne-1].type == ZOMBIE)
         {
-            Etudiant* damagedEtudiant = (Etudiant*)jeu->grille[i-1][ligne-1].ptr;
-            damagedEtudiant->pointsDeVie--;
+            Zombie* damagedZombie = (Zombie*)jeu->grille[i-1][ligne-1].ptr;
+            damagedZombie->pointsDeVie--;
 
-            if (damagedEtudiant->pointsDeVie <= 0)
+            if (damagedZombie->pointsDeVie <= 0)
             {
                 jeu->grille[i-1][ligne-1].ptr = NULL;
                 jeu->grille[i-1][ligne-1].type = VIDE;
 
-                // Correct the pointers of the dead etudiant
-                if (damagedEtudiant == jeu->etudiants)
+                // Correct the pointers of the dead zombie
+                if (damagedZombie == jeu->zombies)
                 {
-                    jeu->etudiants = damagedEtudiant->next;
-                    damagedEtudiant->next->prev = NULL;
+                    jeu->zombies = damagedZombie->next;
+                    damagedZombie->next->prev = NULL;
                 }
                 else
                 { 
-                    damagedEtudiant->prev->next = damagedEtudiant->next;
-                    damagedEtudiant->next->prev = damagedEtudiant->prev;
+                    damagedZombie->prev->next = damagedZombie->next;
+                    damagedZombie->next->prev = damagedZombie->prev;
                 }
 
-                if (damagedEtudiant->next_line != NULL)
-                    damagedEtudiant->next_line->prev_line = damagedEtudiant->prev_line;
+                if (damagedZombie->next_line != NULL)
+                    damagedZombie->next_line->prev_line = damagedZombie->prev_line;
 
-                if (damagedEtudiant->prev_line != NULL)
-                     damagedEtudiant->prev_line->next_line = damagedEtudiant->next_line;
+                if (damagedZombie->prev_line != NULL)
+                     damagedZombie->prev_line->next_line = damagedZombie->next_line;
 
-                free(damagedEtudiant);
+                free(damagedZombie);
             }
             // We can return here since basic tower attacks the first eutudiant in the ligne
             return;
@@ -413,44 +413,44 @@ void nukeTowerAttack (Jeu* jeu, Tourelle* tourelle)
     {
         for (int j=1; j<=NUM_LIGNES; j++)
         {
-            if (jeu->grille[i-1][j-1].type == ETUDIANT)
+            if (jeu->grille[i-1][j-1].type == ZOMBIE)
             {
-                Etudiant* damagedEtudiant = (Etudiant*)jeu->grille[i-1][j-1].ptr;
-                damagedEtudiant->pointsDeVie = 0;
+                Zombie* damagedZombie = (Zombie*)jeu->grille[i-1][j-1].ptr;
+                damagedZombie->pointsDeVie = 0;
 
-                if (damagedEtudiant->pointsDeVie <= 0)
+                if (damagedZombie->pointsDeVie <= 0)
                 {
                     jeu->grille[i-1][j-1].ptr = NULL;
                     jeu->grille[i-1][j-1].type = VIDE;
 
-                    // Correct the pointers of the dead etudiant
-                    if (damagedEtudiant == jeu->etudiants)
+                    // Correct the pointers of the dead zombie
+                    if (damagedZombie == jeu->zombies)
                     {
-                        jeu->etudiants = damagedEtudiant->next;
-                        damagedEtudiant->next->prev = NULL;
+                        jeu->zombies = damagedZombie->next;
+                        damagedZombie->next->prev = NULL;
                     }
                     else
                     { 
-                        damagedEtudiant->prev->next = damagedEtudiant->next;
-                        damagedEtudiant->next->prev = damagedEtudiant->prev;
+                        damagedZombie->prev->next = damagedZombie->next;
+                        damagedZombie->next->prev = damagedZombie->prev;
                     }
 
-                    if (damagedEtudiant->next_line != NULL)
-                        damagedEtudiant->next_line->prev_line = damagedEtudiant->prev_line;
+                    if (damagedZombie->next_line != NULL)
+                        damagedZombie->next_line->prev_line = damagedZombie->prev_line;
 
-                    if (damagedEtudiant->prev_line != NULL)
-                        damagedEtudiant->prev_line->next_line = damagedEtudiant->next_line;
+                    if (damagedZombie->prev_line != NULL)
+                        damagedZombie->prev_line->next_line = damagedZombie->next_line;
 
-                    free(damagedEtudiant);
+                    free(damagedZombie);
                 }
             }
         }
     }
 }
 
-void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle)
+void zombieAttack(Jeu* jeu, Zombie* zombie, Tourelle* tourelle)
 {
-    if(etudiant->type == NORMAL)
+    if(zombie->type == NORMAL)
         tourelle->pointsDeVie -= 1;
 
     if (tourelle->pointsDeVie <= 0)
@@ -479,14 +479,14 @@ void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle)
 // hello
 void freeJeu(Jeu* jeu)
 {
-    Etudiant* curEtudiant = jeu->etudiants;
-    Etudiant* nextEtudiant = NULL;
+    Zombie* curZombie = jeu->zombies;
+    Zombie* nextZombie = NULL;
 
-    while (curEtudiant != NULL)
+    while (curZombie != NULL)
     {
-        nextEtudiant = curEtudiant->next;
-        free(curEtudiant);
-        curEtudiant = nextEtudiant;
+        nextZombie = curZombie->next;
+        free(curZombie);
+        curZombie = nextZombie;
     }
 
     Tourelle* curTourelle = jeu->tourelles;

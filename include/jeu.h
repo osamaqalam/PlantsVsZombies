@@ -9,14 +9,14 @@
 #include <time.h>      // for srand(time(NULL))
 #include <unistd.h>    // for sleep()
 #include "tourelle.h"
-#include "etudiant.h"
+#include "Zombie.h"
 
 #define MAX_LINE_LENGTH 100
 #define NUM_LIGNES 7
 #define NUM_COLS 15
 
 typedef enum{
-    ETUDIANT,
+    ZOMBIE,
     TOURELLE,
     VIDE
 } ObjectType;
@@ -28,7 +28,7 @@ typedef struct {
 
 typedef struct {
 Tourelle* tourelles;
-Etudiant* etudiants;
+Zombie* zombies;
 CellPointer grille[NUM_COLS][NUM_LIGNES];
 int cagnotte;
 int tour;
@@ -38,8 +38,8 @@ void initJeu (Jeu *j, int cagnotte);
 void printTour (const Jeu *j);
 char* readFile(const char* filePath);
 int parseFileContent(const char* fileContents, Jeu *jeu);
-void encounteredObject(Jeu* jeu, Etudiant* movingEtudiant, CellPointer* firstObj);
-void moveEtudiants(Jeu *jeu);
+void encounteredObject(Jeu* jeu, Zombie* movingZombie, CellPointer* firstObj);
+void moveZombies(Jeu *jeu);
 bool checkGameOver(Jeu *jeu);
 
 bool placeTourelle(Jeu* jeu, enum TourelleType type, int x, int y);
@@ -47,7 +47,7 @@ void towersAttack(Jeu* jeu);
 void basicTowerAttack(Jeu* jeu, Tourelle* tourelle);
 void nukeTowerAttack (Jeu* jeu, Tourelle* tourelle);
 
-void etudiantAttack(Jeu* jeu, Etudiant* etudiant, Tourelle* tourelle);
+void zombieAttack(Jeu* jeu, Zombie* zombie, Tourelle* tourelle);
 
 void freeJeu(Jeu* jeu);
 
