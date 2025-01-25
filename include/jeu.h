@@ -8,7 +8,7 @@
 #include <string.h>
 #include <time.h>      // for srand(time(NULL))
 #include <unistd.h>    // for sleep()
-#include "tourelle.h"
+#include "Plant.h"
 #include "Zombie.h"
 
 #define MAX_LINE_LENGTH 100
@@ -17,7 +17,7 @@
 
 typedef enum{
     ZOMBIE,
-    TOURELLE,
+    PLANT,
     VIDE
 } ObjectType;
 
@@ -27,7 +27,7 @@ typedef struct {
 } CellPointer;
 
 typedef struct {
-Tourelle* tourelles;
+Plant* plants;
 Zombie* zombies;
 CellPointer grille[NUM_COLS][NUM_LIGNES];
 int cagnotte;
@@ -42,12 +42,12 @@ void encounteredObject(Jeu* jeu, Zombie* movingZombie, CellPointer* firstObj);
 void moveZombies(Jeu *jeu);
 bool checkGameOver(Jeu *jeu);
 
-bool placeTourelle(Jeu* jeu, enum TourelleType type, int x, int y);
+bool placePlant(Jeu* jeu, enum PlantType type, int x, int y);
 void towersAttack(Jeu* jeu);
-void basicTowerAttack(Jeu* jeu, Tourelle* tourelle);
-void nukeTowerAttack (Jeu* jeu, Tourelle* tourelle);
+void basicTowerAttack(Jeu* jeu, Plant* plant);
+void nukeTowerAttack (Jeu* jeu, Plant* plant);
 
-void zombieAttack(Jeu* jeu, Zombie* zombie, Tourelle* tourelle);
+void zombieAttack(Jeu* jeu, Zombie* zombie, Plant* plant);
 
 void freeJeu(Jeu* jeu);
 

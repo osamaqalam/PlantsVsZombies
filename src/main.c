@@ -5,48 +5,48 @@ void clearConsole() {
     printf("\033[2J"); // on efface tout
 }
 
-void initializeTourelle(Jeu* jeu, enum TourelleType type) {
+void initializePlant(Jeu* jeu, enum PlantType type) {
 
-    if (!canPurchaseTourelle(jeu->cagnotte, type))
+    if (!canPurchasePlant(jeu->cagnotte, type))
     {
-        printf("You do not have enough cagnotte to purchase the tourelle.\n");
+        printf("You do not have enough budget to purchase the plant.\n");
         return;
     }
     
     int x, y;
-    printf("Enter the position to place the tourelle\n");
+    printf("Enter the position to place the plant\n");
     printf("x:");
     scanf("%d", &x);
     printf("y:");
     scanf("%d", &y);
 
     clearConsole();
-    if (placeTourelle(jeu, type, x, y)) {
-        printf("Tourelle placed successfully.\n");
-        jeu->cagnotte -= TOURELLE_PRICES[type];
+    if (placePlant(jeu, type, x, y)) {
+        printf("Plant placed successfully.\n");
+        jeu->cagnotte -= PLANT_PRICES[type];
     } else {
-        printf("Failed to place tourelle.\n");
+        printf("Failed to place plant.\n");
     }
 }
 
 int displayPurchaseMenu(Jeu* jeu) {
     int choice;
     printf("Purchase Menu: (Current Budget is %d)\n", jeu->cagnotte);
-    printf("1. Basic Tower (Attacks first in Ligne)\n");
-    printf("2. Nuke Tower (Kills all zombies in the arena at a random turn between 1-5)\n");
+    printf("1. Basic Plant (Attacks first in line)\n");
+    printf("2. Nuke Plant (Kills all zombies in the arena at a random turn between 1-5)\n");
     printf("3. Exit\n");
     printf("Enter your choice: ");
     scanf("%d", &choice);
 
     switch (choice) {
         case 1:
-            printf("You chose to buy a Basic Tower.\n");
-            initializeTourelle(jeu, BASIC);
+            printf("You chose to buy a Basic Plant.\n");
+            initializePlant(jeu, BASIC);
             return 1;
             break;
         case 2:
-            printf("You chose to buy a Nuke Tower.\n");
-            initializeTourelle(jeu, NUKE);
+            printf("You chose to buy a Nuke Plant.\n");
+            initializePlant(jeu, NUKE);
             return 2;
             break;
         case 3:

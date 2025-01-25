@@ -5,7 +5,7 @@ void initJeu(Jeu* restrict jeu, int cagnotte)
     jeu->tour = 1;
     jeu->cagnotte = cagnotte;
     jeu->zombies = NULL;
-    jeu->tourelles = NULL;
+    jeu->plants = NULL;
 
     for (int i = 0; i < NUM_COLS; i++)
     {
@@ -33,14 +33,14 @@ void printTour (const Jeu* restrict jeu)
                 continue;
             }
             
-            // Check if a cell is occupied by a tourelle
-            else if (jeu->grille[pos-1][ligne-1].type == TOURELLE)
+            // Check if a cell is occupied by a plant
+            else if (jeu->grille[pos-1][ligne-1].type == PLANT)
             {
-                Tourelle* tourelle = (Tourelle*)jeu->grille[pos-1][ligne-1].ptr;
-                if (tourelle->type == BASIC)
-                    printf("%dT  ", tourelle->pointsDeVie);
-                else if (tourelle->type == NUKE)
-                    printf("%dN  ", tourelle->pointsDeVie);
+                Plant* plant = (Plant*)jeu->grille[pos-1][ligne-1].ptr;
+                if (plant->type == BASIC)
+                    printf("%dP  ", plant->pointsDeVie);
+                else if (plant->type == NUKE)
+                    printf("%dN  ", plant->pointsDeVie);
                 continue;
             }
             else
@@ -206,7 +206,7 @@ void encounteredObject(Jeu* jeu, Zombie* movingZombie, CellPointer* firstObj)
 {
     int FinalPosition = movingZombie->position - STEP_SIZE[movingZombie->type];
     Zombie* curZombie = jeu->zombies;
-    Tourelle* curTourelle = jeu->tourelles;
+    Plant* curPlant = jeu->plants;
 
     while (curZombie != NULL)
     {
@@ -220,16 +220,16 @@ void encounteredObject(Jeu* jeu, Zombie* movingZombie, CellPointer* firstObj)
         curZombie = curZombie->next;
     }
 
-    while (curTourelle != NULL)
+    while (curPlant != NULL)
     {
-        if (curTourelle->ligne == movingZombie->ligne && curTourelle->position <= movingZombie->position
-         && curTourelle->position >= FinalPosition)
+        if (curPlant->ligne == movingZombie->ligne && curPlant->position <= movingZombie->position
+         && curPlant->position >= FinalPosition)
         {
-            firstObj->ptr = curTourelle;
-            firstObj->type = TOURELLE;
+            firstObj->ptr = curPlant;
+            firstObj->type = PLANT;
             return;
         }
-        curTourelle = curTourelle->next;
+        curPlant = curPlant->next;
     }
 
     firstObj->ptr = NULL;
@@ -264,10 +264,10 @@ void moveZombies(Jeu *jeu)
                 jeu->grille[curZombie->position-1][curZombie->ligne-1].type = ZOMBIE;
             }
         }
-        else if (cell->type == TOURELLE)
+        else if (cell->type == PLANT)
         {
-            Tourelle* tourelle = (Tourelle*)cell->ptr;
-            zombieAttack(jeu, curZombie, tourelle);
+            Plant* plant = (Plant*)cell->ptr;
+            zombieAttack(jeu, curZombie, plant);
         }
         curZombie = curZombie->next;   
     }
@@ -298,45 +298,45 @@ bool checkGameOver(Jeu *jeu)
 }
 
 // x, y are 1-indexed
-bool placeTourelle(Jeu* restrict jeu, enum TourelleType type, int x, int y) 
+bool placePlant(Jeu* restrict jeu, enum PlantType type, int x, int y) 
 {
     if(jeu->grille[x-1][y-1].type != VIDE ||
         x < 1 || x >= NUM_COLS || y < 1 || y > NUM_LIGNES)
         return false;
 
-    Tourelle* tourelle = (Tourelle*)malloc(sizeof(Tourelle));
-    tourelle->type = type;
+    Plant* plant = (Plant*)malloc(sizeof(Plant));
+    plant->type = type;
 
     if (type == BASIC)
-        tourelle->pointsDeVie = 3;
+        plant->pointsDeVie = 3;
     else if (type == NUKE)
     {
-        tourelle->pointsDeVie = 1;
+        plant->pointsDeVie = 1;
         
         srand(time(NULL)); // use current time as seed for random generator
-        tourelle->nukeTriggerTurn = (rand() % 5) + 1;
+        plant->nukeTriggerTurn = (rand() % 5) + 1;
     }
 
-    tourelle->ligne = y;
-    tourelle->position = x;
-    tourelle->prix = TOURELLE_PRICES[type];
-    tourelle->prev = NULL;
-    tourelle->next = NULL;
+    plant->ligne = y;
+    plant->position = x;
+    plant->prix = PLANT_PRICES[type];
+    plant->prev = NULL;
+    plant->next = NULL;
 
-    jeu->grille[x-1][y-1].ptr = tourelle;
-    jeu->grille[x-1][y-1].type = TOURELLE;
+    jeu->grille[x-1][y-1].ptr = plant;
+    jeu->grille[x-1][y-1].type = PLANT;
 
-    Tourelle* prevTourelle = NULL;
-    Tourelle* curTourelle = jeu->tourelles;
-    if (curTourelle == NULL) {
-        jeu->tourelles = tourelle;
+    Plant* prevPlant = NULL;
+    Plant* curPlant = jeu->plants;
+    if (curPlant == NULL) {
+        jeu->plants = plant;
     } else {
-        while (curTourelle->next != NULL) {
-            prevTourelle = curTourelle;
-            curTourelle = curTourelle->next;
+        while (curPlant->next != NULL) {
+            prevPlant = curPlant;
+            curPlant = curPlant->next;
         }
-        tourelle->prev = curTourelle;
-        curTourelle->next = tourelle;
+        plant->prev = curPlant;
+        curPlant->next = plant;
     }
 
     return true;
@@ -344,32 +344,32 @@ bool placeTourelle(Jeu* restrict jeu, enum TourelleType type, int x, int y)
 
 void towersAttack(Jeu* jeu)
 {
-    Tourelle* curTourelle = jeu->tourelles;
+    Plant* curPlant = jeu->plants;
 
-    while (curTourelle != NULL)
+    while (curPlant != NULL)
     {
-        if (curTourelle->type == BASIC)
+        if (curPlant->type == BASIC)
         {
-            basicTowerAttack(jeu, curTourelle);
+            basicTowerAttack(jeu, curPlant);
         }
-        else if (curTourelle->type == NUKE)
+        else if (curPlant->type == NUKE)
         {
-            if (jeu->tour == curTourelle->nukeTriggerTurn)
+            if (jeu->tour == curPlant->nukeTriggerTurn)
             {
-                nukeTowerAttack(jeu, curTourelle);
+                nukeTowerAttack(jeu, curPlant);
             }
         }
-        curTourelle = curTourelle->next;
+        curPlant = curPlant->next;
     }
 }
 
-void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
+void basicTowerAttack(Jeu* jeu, Plant* plant)
 {
-    const int ligne = tourelle->ligne;
+    const int ligne = plant->ligne;
 
-    for(int i = tourelle->position+1; i <= NUM_COLS; i++)
+    for(int i = plant->position+1; i <= NUM_COLS; i++)
     {
-        // iterate till we find the zombie in the same ligne as the tourelle and
+        // iterate till we find the zombie in the same ligne as the plant and
         // zombie is in the displayable arena
         if (jeu->grille[i-1][ligne-1].type == ZOMBIE)
         {
@@ -407,7 +407,7 @@ void basicTowerAttack(Jeu* jeu, Tourelle* tourelle)
     }
 }
 
-void nukeTowerAttack (Jeu* jeu, Tourelle* tourelle)
+void nukeTowerAttack (Jeu* jeu, Plant* plant)
 {
     for(int i = 1; i <= NUM_COLS; i++)
     {
@@ -448,31 +448,31 @@ void nukeTowerAttack (Jeu* jeu, Tourelle* tourelle)
     }
 }
 
-void zombieAttack(Jeu* jeu, Zombie* zombie, Tourelle* tourelle)
+void zombieAttack(Jeu* jeu, Zombie* zombie, Plant* plant)
 {
     if(zombie->type == NORMAL)
-        tourelle->pointsDeVie -= 1;
+        plant->pointsDeVie -= 1;
 
-    if (tourelle->pointsDeVie <= 0)
+    if (plant->pointsDeVie <= 0)
     {
-        Tourelle* prevTourelle = tourelle->prev;
+        Plant* prevPlant = plant->prev;
 
-        jeu->grille[tourelle->position-1][tourelle->ligne-1].ptr = NULL;
-        jeu->grille[tourelle->position-1][tourelle->ligne-1].type = VIDE;
+        jeu->grille[plant->position-1][plant->ligne-1].ptr = NULL;
+        jeu->grille[plant->position-1][plant->ligne-1].type = VIDE;
         
-        // Case of tourelle to be deleted is the first one added
-        if (prevTourelle == NULL)
-            jeu->tourelles = tourelle->next;
+        // Case of plant to be deleted is the first one added
+        if (prevPlant == NULL)
+            jeu->plants = plant->next;
 
-        // Case of tourelle to be deleted is a later added one
+        // Case of plant to be deleted is a later added one
         else
-            prevTourelle->next = tourelle->next;
+            prevPlant->next = plant->next;
 
-        // Fix the prev pointer of the next tourelle
-        if (tourelle->next != NULL)
-            (tourelle->next)->prev = prevTourelle;
+        // Fix the prev pointer of the next plant
+        if (plant->next != NULL)
+            (plant->next)->prev = prevPlant;
 
-        free(tourelle);         
+        free(plant);         
     }
 }
 
@@ -489,14 +489,14 @@ void freeJeu(Jeu* jeu)
         curZombie = nextZombie;
     }
 
-    Tourelle* curTourelle = jeu->tourelles;
-    Tourelle* nextTourelle = NULL;
+    Plant* curPlant = jeu->plants;
+    Plant* nextPlant = NULL;
 
-    while (curTourelle != NULL)
+    while (curPlant != NULL)
     {
-        nextTourelle = curTourelle->next;
-        free(curTourelle);
-        curTourelle = nextTourelle;
+        nextPlant = curPlant->next;
+        free(curPlant);
+        curPlant = nextPlant;
     }
 
     free(jeu);
